@@ -306,7 +306,27 @@ const forgotPassword = asyncHandler(async (req, res) => {
 });
 
 const resetPassword = asyncHandler(async (req, res) => {
-  const { email, code, newPassword } = req.body;
+  const { email, newPassword } = req.body;
+
+  // Find the user by email
+  const user = await User.findOne({ email });
+
+  if (!user) {
+    throw new ApiError(404, "User not found");
+  }
+
+  // Update the password and clear the verification fields
+  user.password = newPassword;
+  user.verificationCode = undefined;
+  user.verificationCodeExpires = undefined;
+
+  await user.save();
+
+  res.status(200).json(new ApiResponse(200, null, "Password reset successfully"));
+});
+
+const verifyResetCode = asyncHandler(async (req, res) => {
+  const { email, code } = req.body;
 
   // Find the user by email
   const user = await User.findOne({ email });
@@ -325,16 +345,10 @@ const resetPassword = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Verification code expired");
   }
 
-  // Update the password and clear the verification fields
-  user.password = newPassword;
-  user.verificationCode = undefined;
-  user.verificationCodeExpires = undefined;
-
-  await user.save();
-
+  // If everything is valid, send a success response
   res
     .status(200)
-    .json(new ApiResponse(200, null, "Password reset successfully"));
+    .json(new ApiResponse(200, null, "Verification code is valid"));
 });
 
 export {
@@ -345,4 +359,5 @@ export {
   refreshAccessToken,
   forgotPassword,
   resetPassword,
+  verifyResetCode,
 };

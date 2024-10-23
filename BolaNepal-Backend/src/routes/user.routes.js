@@ -7,6 +7,7 @@ import {
   verifyEmail,
   resetPassword,
   forgotPassword,
+  verifyResetCode,
 } from "../controllers/user.controller.js";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
 
@@ -16,6 +17,7 @@ router.route("/register").post(registerUser);
 
 router.route("/verifycode").post(verifyEmail);
 router.route("/forgot-password").post(forgotPassword);
+router.route("/verify-reset-code").post(verifyResetCode);
 router.route("/reset-password").post(resetPassword);
 
 router.route("/login").post(loginUser);
