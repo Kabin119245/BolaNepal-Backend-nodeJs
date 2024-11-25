@@ -16,6 +16,6 @@ router
     uploadAudio
   );
 
-router.route("/getaudios").get(verifyJWT, getAllAudioUrls);
+router.route("/getaudios").get(getAllAudioUrls);
 
 export default router;
