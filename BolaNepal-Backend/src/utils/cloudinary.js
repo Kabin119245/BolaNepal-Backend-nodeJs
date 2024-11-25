@@ -15,6 +15,7 @@ const uploadOnCloudinary = async (localFilePath, customFileName) => {
     const response = await cloudinary.uploader.upload(localFilePath, {
       resource_type: "auto",
       public_id: customFileName,
+      format: "wav",
     });
     //file has been successfully uploaded
     console.log("Uploaded file on cloudinary", response.url);
